@@ -44,7 +44,6 @@
         </view>
       </scroll-view>
     </div>
-
   </div>
 </template>
 
