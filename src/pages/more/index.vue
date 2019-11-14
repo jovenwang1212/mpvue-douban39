@@ -1,5 +1,5 @@
 <template>
-  <div v-if="categoryList[1].list.length">
+   <div>
     <div class="header">
       <span>豆瓣</span>
       <icon color="#00b600"
@@ -9,20 +9,16 @@
       <button>打开豆瓣App</button>
     </div>
     <!-- 影院热映 -->
-    <div class="movie-item"
-         v-for="(cate,i) in categoryList"
-         :key="cate.name">
+    <div class="movie-item">
       <p class="title">
-        <span>{{cate.name}}</span>
-        <span class="more-link"
-              @click="toMore(cate.param)">更多</span>
+        <span>{{title}}</span>
       </p>
 
-      <scroll-view class="scroll-view_H"
+      <view class="scroll-view_H"
                    scroll-x="true"
                    style="width: 100%">
         <view class="scroll-view-item_H"
-              v-for="item in cate.list"
+              v-for="item in movieList"
               :key="item.id">
           <img :src="item.images.large"
                alt="">
@@ -42,7 +38,7 @@
             <span class="num">{{item.rating.average?item.rating.average:'暂无评论'}}</span>
           </div>
         </view>
-      </scroll-view>
+      </view>
     </div>
 
   </div>
@@ -52,39 +48,29 @@
 export default {
   data () {
     return {
-      categoryList: [
-        {
-          name: '影院热映',
-          param: 'in_theaters',
-          list: []
-        },
-        {
-          name: 'TOP250',
-          param: 'top250',
-          list: []
-        }
-      ]
+      title: '',
+      movieList: []
     }
   },
-  created () {
-    this.categoryList.forEach(v => {
-      this.getMovies(v)
-    })
+  onLoad (options) {
+    console.log(options.param)
+    let param = options.param
+    // 设置标题
+    this.title = param === 'top250' ? 'TOP250' : '影院热映'
+    wx.setNavigationBarTitle({ title: this.title })
+    this.getMovies(param)
   },
   methods: {
-    toMore (param) {
-      wx.navigateTo({ url: '/pages/more/main?param=' + param })
-    },
-    getMovies (cate) {
+    getMovies (param) {
       this.$request({
-        url: `/v2/movie/${cate.param}?apikey=0df993c66c0c636e29ecbb5344252a4a`
+        url: `/v2/movie/${param}?apikey=0df993c66c0c636e29ecbb5344252a4a`
       }).then(res => {
         console.log(res)
         let movies = res.data.subjects
         movies.forEach(v => {
           v.starNum = Math.ceil(v.rating.average / 2)
         })
-        cate.list = res.data.subjects
+        this.movieList = res.data.subjects
       })
     }
   }
@@ -134,14 +120,18 @@ export default {
 }
 
 .scroll-view_H {
-  white-space: nowrap;
+  display: flex;
+  flex-wrap: wrap;
   margin-top: 12rpx;
   margin-bottom: 62rpx;
 }
 .scroll-view-item_H {
-  display: inline-block;
+  width:33.33%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom:20rpx;
 
-  margin-left: 18rpx;
   > img {
     width: 200rpx;
     height: 286rpx;
@@ -175,5 +165,3 @@ export default {
   }
 }
 </style>
-
-
